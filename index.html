@@ -503,13 +503,24 @@ document.getElementById('jobForm').addEventListener('submit', function(e){
     submittedAt: new Date().toISOString()
   };
 
-  try{
-    const existing = JSON.parse(localStorage.getItem('pipeline_apps') || '[]');
-    existing.push(submission);
-    localStorage.setItem('pipeline_apps', JSON.stringify(existing));
-  }catch(err){
-    console.error('تعذر حفظ الطلب', err);
-  }
+      try {
+      const resumeUrl = await uploadResume(resumeFile);
+      const formData = {
+        full_name: name,
+        email: email,
+        phone: phone,
+        position: position,
+        experience: experience,
+        education: education,
+        message: message,
+        resume_url: resumeUrl
+      };
+      await submitApplication(formData);
+    } catch(err){
+      console.error('تعذر حفظ الطلب', err);
+      alert('حدث خطأ أثناء إرسال الطلب: ' + err.message);
+    }
+
 
   const sheet = document.getElementById('sheet');
   const successView = document.getElementById('successView');
