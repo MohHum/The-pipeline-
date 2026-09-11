@@ -332,7 +332,7 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 
         <div class="field">
           <label for="fullName">الاسم الكامل <span class="req">*</span></label>
-          <input type="text" id="fullName" required placeholder="مثال: محمد عويض ">
+          <input type="text" id="fullName" required placeholder="مثال: محمد عويض">
         </div>
 
         <div class="row2">
@@ -478,7 +478,7 @@ cvFileInput.addEventListener('change', function(){
   reader.readAsDataURL(file);
 });
 
-document.getElementById('jobForm').addEventListener('submit', async function(e){
+document.getElementById('jobForm').addEventListener('submit', function(e){
   e.preventDefault();
 
   const submitBtn = document.getElementById('submitBtn');
@@ -503,9 +503,9 @@ document.getElementById('jobForm').addEventListener('submit', async function(e){
   };
 
   try{
-    if(window.storage){
-      await window.storage.set('application:' + submission.id, JSON.stringify(submission), true);
-    }
+    const existing = JSON.parse(localStorage.getItem('pipeline_apps') || '[]');
+    existing.push(submission);
+    localStorage.setItem('pipeline_apps', JSON.stringify(existing));
   }catch(err){
     console.error('تعذر حفظ الطلب', err);
   }
@@ -541,12 +541,12 @@ document.getElementById('gateCancel').addEventListener('click', function(){
 document.getElementById('gateGo').addEventListener('click', checkPasscode);
 passInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') checkPasscode(); });
 
-async function checkPasscode(){
+function checkPasscode(){
   if(passInput.value === ADMIN_PASSCODE){
     gateOverlay.classList.remove('show');
     document.querySelector('.form-wrap').style.display = 'none';
     document.getElementById('adminWrap').classList.add('show');
-    await loadApplications();
+    loadApplications();
   } else {
     gateError.style.display = 'block';
   }
@@ -557,25 +557,16 @@ document.getElementById('backToForm').addEventListener('click', function(){
   document.querySelector('.form-wrap').style.display = 'block';
 });
 
-async function loadApplications(){
+function loadApplications(){
   const listEl = document.getElementById('appsList');
   listEl.innerHTML = '<p class="empty-state">جاري تحميل الطلبات...</p>';
 
   try{
-    const result = await window.storage.list('application:', true);
-    const keys = (result && result.keys) ? result.keys : [];
+    const apps = JSON.parse(localStorage.getItem('pipeline_apps') || '[]');
 
-    if(keys.length === 0){
+    if(apps.length === 0){
       listEl.innerHTML = '<p class="empty-state">ما فيه طلبات وصلت لين الحين</p>';
       return;
-    }
-
-    const apps = [];
-    for(const key of keys){
-      try{
-        const rec = await window.storage.get(key, true);
-        if(rec && rec.value) apps.push(JSON.parse(rec.value));
-      }catch(err){ }
     }
 
     apps.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
