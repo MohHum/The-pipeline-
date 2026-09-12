@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نموذج طلب توظيف</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
 
@@ -30,174 +31,70 @@ body{
   padding:32px 18px 60px;
 }
 
-.sheet{
-  max-width:560px;
-  margin:0 auto;
-}
+.sheet{ max-width:560px; margin:0 auto; }
 
 .masthead{
-  padding-bottom:22px;
-  margin-bottom:30px;
-  border-bottom:2px solid var(--accent);
-  position:relative;
+  padding-bottom:22px; margin-bottom:30px;
+  border-bottom:2px solid var(--accent); position:relative;
 }
-
-.masthead .eyebrow{
-  font-size:14px;
-  color:var(--ink-soft);
-  margin:0 0 6px;
-}
-
+.masthead .eyebrow{ font-size:14px; color:var(--ink-soft); margin:0 0 6px; }
 .masthead h1{
-  font-family:'Fraunces', serif;
-  font-optical-sizing:auto;
-  font-weight:600;
-  font-size:clamp(30px, 7vw, 42px);
-  line-height:1.15;
-  margin:0 0 10px;
-  color:var(--ink);
+  font-family:'Fraunces', serif; font-optical-sizing:auto; font-weight:600;
+  font-size:clamp(30px, 7vw, 42px); line-height:1.15; margin:0 0 10px; color:var(--ink);
 }
+.masthead p{ font-size:15px; color:var(--ink-soft); line-height:1.6; margin:0; max-width:44ch; }
 
-.masthead p{
-  font-size:15px;
-  color:var(--ink-soft);
-  line-height:1.6;
-  margin:0;
-  max-width:44ch;
-}
-
-.group{
-  margin-bottom:30px;
-}
-
+.group{ margin-bottom:30px; }
 .group-title{
-  font-family:'Fraunces', serif;
-  font-weight:500;
-  font-size:19px;
-  color:var(--accent-deep);
-  margin:0 0 16px;
-  padding-bottom:8px;
-  border-bottom:1px solid var(--line);
+  font-family:'Fraunces', serif; font-weight:500; font-size:19px;
+  color:var(--accent-deep); margin:0 0 16px; padding-bottom:8px; border-bottom:1px solid var(--line);
 }
 
-.field{
-  margin-bottom:20px;
-}
+.field{ margin-bottom:20px; }
+.field label{ display:block; font-size:13.5px; color:var(--ink-soft); margin-bottom:7px; }
+.field .req{ color:var(--accent-deep); }
 
-.field label{
-  display:block;
-  font-size:13.5px;
-  color:var(--ink-soft);
-  margin-bottom:7px;
+.field input, .field select, .field textarea{
+  width:100%; border:none; border-bottom:1.5px solid var(--line);
+  background:transparent; padding:9px 2px; font-family:'Inter', sans-serif;
+  font-size:16px; color:var(--ink); outline:none; transition:border-color .2s ease;
 }
+.field input:focus, .field select:focus, .field textarea:focus{ border-bottom-color:var(--accent); }
+.field input[type="file"]{ border-bottom:none; padding:6px 0; font-size:14.5px; color:var(--ink-soft); }
 
-.field .req{
-  color:var(--accent-deep);
-}
+.hint{ font-size:12.5px; color:#8a8f9e; margin-top:6px; }
+.hint.error{ color:var(--danger); }
 
-.field input,
-.field select,
-.field textarea{
-  width:100%;
-  border:none;
-  border-bottom:1.5px solid var(--line);
-  background:transparent;
-  padding:9px 2px;
-  font-family:'Inter', sans-serif;
-  font-size:16px;
-  color:var(--ink);
-  outline:none;
-  transition:border-color .2s ease;
-}
-
-.field input:focus,
-.field select:focus,
-.field textarea:focus{
-  border-bottom-color:var(--accent);
-}
-
-.field input[type="file"]{
-  border-bottom:none;
-  padding:6px 0;
-  font-size:14.5px;
-  color:var(--ink-soft);
-}
-
-.hint{
-  font-size:12.5px;
-  color:#8a8f9e;
-  margin-top:6px;
-}
-
-.hint.error{
-  color:var(--danger);
-}
-
-.field textarea{
-  resize:vertical;
-  min-height:96px;
-  line-height:1.6;
-}
-
+.field textarea{ resize:vertical; min-height:96px; line-height:1.6; }
 .field select{
-  appearance:none;
-  -webkit-appearance:none;
+  appearance:none; -webkit-appearance:none;
   background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='9' viewBox='0 0 14 9'><path d='M1 1l6 6 6-6' stroke='%234b5168' stroke-width='1.6' fill='none' fill-rule='evenodd'/></svg>");
-  background-repeat:no-repeat;
-  background-position:left 2px center;
-  padding-left:20px;
+  background-repeat:no-repeat; background-position:left 2px center; padding-left:20px;
 }
 
-.row2{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:0 16px;
-}
+.row2{ display:grid; grid-template-columns:1fr 1fr; gap:0 16px; }
+@media (max-width:420px){ .row2{grid-template-columns:1fr;} }
 
-@media (max-width:420px){
-  .row2{grid-template-columns:1fr;}
-}
-
-.submit-row{
-  margin-top:36px;
-}
-
+.submit-row{ margin-top:36px; }
 button.submit{
-  width:100%;
-  background:var(--ink);
-  color:var(--paper);
-  border:none;
-  padding:16px;
-  font-family:'Inter', sans-serif;
-  font-size:16px;
-  font-weight:600;
-  cursor:pointer;
+  width:100%; background:var(--ink); color:var(--paper); border:none; padding:16px;
+  font-family:'Inter', sans-serif; font-size:16px; font-weight:600; cursor:pointer;
   transition:background .2s ease, transform .1s ease;
 }
-
 button.submit:hover{ background:var(--accent-deep); }
 button.submit:active{ transform:scale(0.99); }
 button.submit:disabled{ opacity:.6; cursor:default; }
 
-.note{
-  font-size:12.5px;
-  color:#8a8f9e;
-  text-align:center;
-  margin-top:14px;
-  line-height:1.6;
-}
+.note{ font-size:12.5px; color:#8a8f9e; text-align:center; margin-top:14px; line-height:1.6; }
 
-.admin-link{
-  text-align:center;
-  margin-top:26px;
-}
+.admin-link{ text-align:center; margin-top:26px; }
+.admin-link a{ font-size:12.5px; color:#9a9686; text-decoration:underline; cursor:pointer; }
 
-.admin-link a{
-  font-size:12.5px;
-  color:#9a9686;
-  text-decoration:underline;
-  cursor:pointer;
+.error-box{
+  display:none; background:#fbeaea; border:1px solid var(--danger); color:var(--danger);
+  padding:12px 14px; font-size:13.5px; margin-bottom:20px; line-height:1.6;
 }
+.error-box.show{ display:block; }
 
 /* success state */
 .success{ display:none; text-align:center; padding:50px 10px 30px; }
@@ -205,27 +102,18 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 .sheet.hide-form .form-wrap{ display:none; }
 
 .check-wrap{ width:74px; height:74px; margin:0 auto 22px; }
-
 .check-circle{
   stroke:var(--success); stroke-width:2; fill:none;
-  stroke-dasharray:166; stroke-dashoffset:166;
-  animation:draw 0.6s ease forwards;
+  stroke-dasharray:166; stroke-dashoffset:166; animation:draw 0.6s ease forwards;
 }
 .check-mark{
   stroke:var(--success); stroke-width:2.5; fill:none;
-  stroke-dasharray:48; stroke-dashoffset:48;
-  animation:draw 0.4s ease 0.5s forwards;
+  stroke-dasharray:48; stroke-dashoffset:48; animation:draw 0.4s ease 0.5s forwards;
 }
 @keyframes draw{ to{stroke-dashoffset:0;} }
 
-.success h2{
-  font-family:'Fraunces', serif; font-weight:600; font-size:26px;
-  margin:0 0 10px; color:var(--ink);
-}
-.success p{
-  color:var(--ink-soft); font-size:15px; line-height:1.7;
-  max-width:38ch; margin:0 auto;
-}
+.success h2{ font-family:'Fraunces', serif; font-weight:600; font-size:26px; margin:0 0 10px; color:var(--ink); }
+.success p{ color:var(--ink-soft); font-size:15px; line-height:1.7; max-width:38ch; margin:0 auto; }
 
 @media (prefers-reduced-motion: reduce){
   .check-circle, .check-mark{ animation:none; stroke-dashoffset:0; }
@@ -233,26 +121,16 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 
 /* admin gate + panel */
 .overlay{
-  display:none;
-  position:fixed; inset:0;
-  background:rgba(28,35,64,0.5);
-  align-items:center; justify-content:center;
-  padding:20px; z-index:20;
+  display:none; position:fixed; inset:0; background:rgba(28,35,64,0.5);
+  align-items:center; justify-content:center; padding:20px; z-index:20;
 }
 .overlay.show{ display:flex; }
 
-.gate-box{
-  background:var(--paper); max-width:340px; width:100%;
-  padding:28px 24px; border-top:3px solid var(--accent);
-}
-.gate-box h3{
-  font-family:'Fraunces', serif; font-weight:600; font-size:20px;
-  margin:0 0 16px;
-}
+.gate-box{ background:var(--paper); max-width:340px; width:100%; padding:28px 24px; border-top:3px solid var(--accent); }
+.gate-box h3{ font-family:'Fraunces', serif; font-weight:600; font-size:20px; margin:0 0 16px; }
 .gate-box input{
   width:100%; border:none; border-bottom:1.5px solid var(--line);
-  background:transparent; padding:9px 2px; font-size:16px;
-  color:var(--ink); outline:none; margin-bottom:8px;
+  background:transparent; padding:9px 2px; font-size:16px; color:var(--ink); outline:none; margin-bottom:8px;
 }
 .gate-actions{ display:flex; gap:10px; margin-top:16px; }
 .gate-actions button{
@@ -269,37 +147,24 @@ button.submit:disabled{ opacity:.6; cursor:default; }
   display:flex; justify-content:space-between; align-items:baseline;
   border-bottom:2px solid var(--accent); padding-bottom:16px; margin-bottom:22px;
 }
-.admin-header h1{
-  font-family:'Fraunces', serif; font-weight:600; font-size:28px; margin:0;
-}
+.admin-header h1{ font-family:'Fraunces', serif; font-weight:600; font-size:28px; margin:0; }
 .admin-header a{ font-size:13px; color:var(--ink-soft); cursor:pointer; }
 
-.app-card{
-  border-bottom:1px solid var(--line);
-  padding:16px 0;
-}
-.app-card .row{
-  display:flex; justify-content:space-between; align-items:center;
-  cursor:pointer;
-}
-.app-card .who h4{
-  font-family:'Fraunces', serif; font-weight:600; font-size:17px; margin:0 0 3px;
-}
+.app-card{ border-bottom:1px solid var(--line); padding:16px 0; }
+.app-card .row{ display:flex; justify-content:space-between; align-items:center; cursor:pointer; }
+.app-card .who h4{ font-family:'Fraunces', serif; font-weight:600; font-size:17px; margin:0 0 3px; }
 .app-card .who span{ font-size:13px; color:var(--ink-soft); }
 .app-card .date{ font-size:12px; color:#9a9686; white-space:nowrap; }
 
 .app-details{
-  display:none;
-  margin-top:14px; padding-top:14px; border-top:1px dashed var(--line);
-  font-size:14px; line-height:1.9;
+  display:none; margin-top:14px; padding-top:14px; border-top:1px dashed var(--line); font-size:14px; line-height:1.9;
 }
 .app-details.show{ display:block; }
 .app-details .k{ color:var(--ink-soft); }
 
 .dl-btn{
   display:inline-block; margin-top:10px; padding:8px 16px;
-  background:var(--accent); color:#fff; text-decoration:none;
-  font-size:13.5px; font-weight:600;
+  background:var(--accent); color:#fff; text-decoration:none; font-size:13.5px; font-weight:600;
 }
 
 .empty-state{ color:var(--ink-soft); font-size:14px; text-align:center; padding:40px 0; }
@@ -316,16 +181,16 @@ button.submit:disabled{ opacity:.6; cursor:default; }
       <p>عبّئ بياناتك بدقة، فريق الاستقطاب يراجع كل طلب بعناية ويتواصل مع المتقدمين المناسبين خلال أيام العمل القادمة.</p>
     </div>
 
+    <div class="error-box" id="errorBox"></div>
+
     <form id="jobForm">
 
       <div class="group">
         <p class="group-title">البيانات الشخصية</p>
-
         <div class="field">
           <label for="fullName">الاسم الكامل <span class="req">*</span></label>
           <input type="text" id="fullName" required placeholder="مثال: سارة عبدالله المطيري">
         </div>
-
         <div class="row2">
           <div class="field">
             <label for="email">البريد الإلكتروني <span class="req">*</span></label>
@@ -340,12 +205,10 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 
       <div class="group">
         <p class="group-title">تفاصيل التقديم</p>
-
         <div class="field">
           <label for="position">الوظيفة المتقدم لها <span class="req">*</span></label>
           <input type="text" id="position" required placeholder="مثال: أخصائي تسويق رقمي">
         </div>
-
         <div class="row2">
           <div class="field">
             <label for="experience">سنوات الخبرة</label>
@@ -369,13 +232,11 @@ button.submit:disabled{ opacity:.6; cursor:default; }
             </select>
           </div>
         </div>
-
         <div class="field">
           <label for="cvFile">السيرة الذاتية (PDF) <span class="req">*</span></label>
           <input type="file" id="cvFile" accept="application/pdf" required>
-          <p class="hint" id="cvHint">ملف PDF فقط، بحجم أقصى 4 ميجابايت</p>
+          <p class="hint" id="cvHint">ملف PDF فقط، بحجم أقصى 5 ميجابايت</p>
         </div>
-
         <div class="field">
           <label for="cvLink">أو رابط LinkedIn / بورتفوليو (اختياري)</label>
           <input type="url" id="cvLink" placeholder="https://">
@@ -384,7 +245,6 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 
       <div class="group">
         <p class="group-title">نبذة عنك</p>
-
         <div class="field">
           <label for="message">ليش تناسبك هذي الوظيفة؟</label>
           <textarea id="message" placeholder="اكتب نبذة مختصرة عن خبرتك وسبب اهتمامك بالانضمام..."></textarea>
@@ -395,7 +255,6 @@ button.submit:disabled{ opacity:.6; cursor:default; }
         <button type="submit" class="submit" id="submitBtn">إرسال الطلب</button>
         <p class="note">بإرسالك هذا النموذج، أنت توافق على مشاركة بياناتك مع فريق الاستقطاب لأغراض التوظيف فقط.</p>
       </div>
-
     </form>
 
     <p class="admin-link"><a id="openAdminGate">دخول فريق الاستقطاب</a></p>
@@ -435,17 +294,23 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 </div>
 
 <script>
-// ---- بسيطة: كلمة مرور ثابتة لحماية شكلية فقط، مو حماية حقيقية على مستوى خادم ----
+// ---- إعدادات Supabase ----
+const SUPABASE_URL = 'https://lcyvockgdgwjbvdvhpoe.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_zUOqBD4xkRx-2vMXhBUeig_waV3ILEs';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// كلمة مرور شكلية لحماية لوحة الإدارة (ليست حماية حقيقية على مستوى خادم)
 const ADMIN_PASSCODE = "hr2026";
 
 const cvFileInput = document.getElementById('cvFile');
 const cvHint = document.getElementById('cvHint');
-const MAX_SIZE = 4 * 1024 * 1024; // 4MB (base64 encoding adds ~33%)
-let selectedFileData = null; // { name, type, base64 }
+const errorBox = document.getElementById('errorBox');
+const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+let selectedFile = null;
 
 cvFileInput.addEventListener('change', function(){
   const file = cvFileInput.files[0];
-  selectedFileData = null;
+  selectedFile = null;
   if(!file) return;
 
   if(file.type !== 'application/pdf'){
@@ -455,23 +320,50 @@ cvFileInput.addEventListener('change', function(){
     return;
   }
   if(file.size > MAX_SIZE){
-    cvHint.textContent = 'حجم الملف أكبر من 4 ميجابايت، اختر ملف أصغر';
+    cvHint.textContent = 'حجم الملف أكبر من 5 ميجابايت، اختر ملف أصغر';
     cvHint.classList.add('error');
     cvFileInput.value = '';
     return;
   }
   cvHint.classList.remove('error');
   cvHint.textContent = 'تم اختيار: ' + file.name + ' (' + (file.size/1024/1024).toFixed(1) + ' ميجابايت)';
-
-  const reader = new FileReader();
-  reader.onload = function(e){
-    selectedFileData = { name: file.name, type: file.type, base64: e.target.result };
-  };
-  reader.readAsDataURL(file);
+  selectedFile = file;
 });
+
+// رفع ملف الـ PDF لـ Supabase Storage وإرجاع رابطه العام
+async function uploadResume(file){
+  const fileExt = file.name.split('.').pop();
+  const fileName = Date.now() + '_' + Math.random().toString(36).slice(2,8) + '.' + fileExt;
+
+  const { error: uploadError } = await _supabase
+    .storage
+    .from('resumes')
+    .upload(fileName, file, { contentType: 'application/pdf' });
+
+  if(uploadError) throw uploadError;
+
+  const { data: publicUrlData } = _supabase
+    .storage
+    .from('resumes')
+    .getPublicUrl(fileName);
+
+  return publicUrlData.publicUrl;
+}
+
+// حفظ بيانات الطلب بجدول applications
+async function saveApplication(record){
+  const { error } = await _supabase
+    .from('applications')
+    .insert([record]);
+
+  if(error) throw error;
+}
 
 document.getElementById('jobForm').addEventListener('submit', async function(e){
   e.preventDefault();
+
+  errorBox.classList.remove('show');
+  errorBox.textContent = '';
 
   const submitBtn = document.getElementById('submitBtn');
   submitBtn.disabled = true;
@@ -486,33 +378,43 @@ document.getElementById('jobForm').addEventListener('submit', async function(e){
   const cvLink = document.getElementById('cvLink').value.trim();
   const message = document.getElementById('message').value.trim();
 
-  const submission = {
-    id: 'app_' + Date.now() + '_' + Math.random().toString(36).slice(2,8),
-    name, email, phone, position, experience, education, cvLink, message,
-    cvFileName: selectedFileData ? selectedFileData.name : null,
-    cvFileBase64: selectedFileData ? selectedFileData.base64 : null,
-    submittedAt: new Date().toISOString()
-  };
-
   try{
-    if(window.storage){
-      await window.storage.set('application:' + submission.id, JSON.stringify(submission), true);
+    let cvUrl = null;
+    if(selectedFile){
+      cvUrl = await uploadResume(selectedFile);
     }
+
+    await saveApplication({
+      full_name: name,
+      email: email,
+      phone: phone,
+      position: position,
+      experience: experience,
+      education: education,
+      cv_link: cvLink || null,
+      cv_url: cvUrl,
+      message: message
+    });
+
+    const sheet = document.getElementById('sheet');
+    const successView = document.getElementById('successView');
+    const successMsg = document.getElementById('successMsg');
+
+    if(name){
+      successMsg.textContent = 'شكراً ' + name + (position ? ' على تقديمك لوظيفة "' + position + '"' : ' على تقديمك') + '. فريق الاستقطاب بيراجع بياناتك ويتواصل معك قريباً.';
+    }
+
+    sheet.classList.add('hide-form');
+    successView.classList.add('show');
+    window.scrollTo({top:0, behavior:'smooth'});
+
   }catch(err){
-    console.error('تعذر حفظ الطلب', err);
+    console.error('تعذر إرسال الطلب', err);
+    errorBox.textContent = 'صار خطأ أثناء إرسال الطلب، حاول مرة ثانية. (' + (err.message || 'خطأ غير معروف') + ')';
+    errorBox.classList.add('show');
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'إرسال الطلب';
   }
-
-  const sheet = document.getElementById('sheet');
-  const successView = document.getElementById('successView');
-  const successMsg = document.getElementById('successMsg');
-
-  if(name){
-    successMsg.textContent = 'شكراً ' + name + (position ? ' على تقديمك لوظيفة "' + position + '"' : ' على تقديمك') + '. فريق الاستقطاب بيراجع بياناتك ويتواصل معك قريباً.';
-  }
-
-  sheet.classList.add('hide-form');
-  successView.classList.add('show');
-  window.scrollTo({top:0, behavior:'smooth'});
 });
 
 // ---- admin gate ----
@@ -555,35 +457,31 @@ async function loadApplications(){
   listEl.innerHTML = '<p class="empty-state">جاري تحميل الطلبات...</p>';
 
   try{
-    const result = await window.storage.list('application:', true);
-    const keys = (result && result.keys) ? result.keys : [];
+    const { data, error } = await _supabase
+      .from('applications')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    if(keys.length === 0){
+    if(error) throw error;
+
+    if(!data || data.length === 0){
       listEl.innerHTML = '<p class="empty-state">ما فيه طلبات وصلت لين الحين</p>';
       return;
     }
 
-    const apps = [];
-    for(const key of keys){
-      try{
-        const rec = await window.storage.get(key, true);
-        if(rec && rec.value) apps.push(JSON.parse(rec.value));
-      }catch(err){ /* skip broken record */ }
-    }
-
-    apps.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
-
     listEl.innerHTML = '';
-    apps.forEach(app => {
+    data.forEach(app => {
       const card = document.createElement('div');
       card.className = 'app-card';
 
-      const dateStr = new Date(app.submittedAt).toLocaleString('ar-SA', { dateStyle:'medium', timeStyle:'short' });
+      const dateStr = app.created_at
+        ? new Date(app.created_at).toLocaleString('ar-SA', { dateStyle:'medium', timeStyle:'short' })
+        : '';
 
       card.innerHTML = `
         <div class="row">
           <div class="who">
-            <h4>${escapeHtml(app.name || 'بدون اسم')}</h4>
+            <h4>${escapeHtml(app.full_name || 'بدون اسم')}</h4>
             <span>${escapeHtml(app.position || '—')}</span>
           </div>
           <div class="date">${dateStr}</div>
@@ -593,9 +491,9 @@ async function loadApplications(){
           <div><span class="k">الجوال:</span> ${escapeHtml(app.phone || '—')}</div>
           <div><span class="k">الخبرة:</span> ${escapeHtml(app.experience || '—')}</div>
           <div><span class="k">المؤهل:</span> ${escapeHtml(app.education || '—')}</div>
-          ${app.cvLink ? `<div><span class="k">رابط:</span> ${escapeHtml(app.cvLink)}</div>` : ''}
+          ${app.cv_link ? `<div><span class="k">رابط:</span> ${escapeHtml(app.cv_link)}</div>` : ''}
           ${app.message ? `<div style="margin-top:8px;"><span class="k">نبذة:</span> ${escapeHtml(app.message)}</div>` : ''}
-          ${app.cvFileBase64 ? `<a class="dl-btn" href="${app.cvFileBase64}" target="_blank" rel="noopener">فتح السيرة الذاتية</a>` : ''}
+          ${app.cv_url ? `<a class="dl-btn" href="${app.cv_url}" target="_blank" rel="noopener">فتح السيرة الذاتية</a>` : ''}
         </div>
       `;
 
