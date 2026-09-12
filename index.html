@@ -1,19 +1,9 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- إعدادات وأيقونة تطبيق The Pipeline للشاشة الرئيسية -->
-<meta name="apple-mobile-web-app-title" content="The Pipeline">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/HumaidiPortal/assets/main/humhub-full-dark-icon.png">
-
-<title>The Pipeline</title>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<title>نموذج طلب توظيف</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@400;500;600&display=swap');
 
@@ -333,7 +323,7 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 
         <div class="field">
           <label for="fullName">الاسم الكامل <span class="req">*</span></label>
-          <input type="text" id="fullName" required placeholder="مثال: محمد عويض">
+          <input type="text" id="fullName" required placeholder="مثال: سارة عبدالله المطيري">
         </div>
 
         <div class="row2">
@@ -445,12 +435,13 @@ button.submit:disabled{ opacity:.6; cursor:default; }
 </div>
 
 <script>
+// ---- بسيطة: كلمة مرور ثابتة لحماية شكلية فقط، مو حماية حقيقية على مستوى خادم ----
 const ADMIN_PASSCODE = "hr2026";
 
 const cvFileInput = document.getElementById('cvFile');
 const cvHint = document.getElementById('cvHint');
-const MAX_SIZE = 4 * 1024 * 1024;
-let selectedFileData = null;
+const MAX_SIZE = 4 * 1024 * 1024; // 4MB (base64 encoding adds ~33%)
+let selectedFileData = null; // { name, type, base64 }
 
 cvFileInput.addEventListener('change', function(){
   const file = cvFileInput.files[0];
@@ -479,7 +470,7 @@ cvFileInput.addEventListener('change', function(){
   reader.readAsDataURL(file);
 });
 
-document.getElementById('jobForm').addEventListener('submit', function(e){
+document.getElementById('jobForm').addEventListener('submit', async function(e){
   e.preventDefault();
 
   const submitBtn = document.getElementById('submitBtn');
@@ -503,24 +494,13 @@ document.getElementById('jobForm').addEventListener('submit', function(e){
     submittedAt: new Date().toISOString()
   };
 
-      try {
-      const resumeUrl = await uploadResume(resumeFile);
-      const formData = {
-        full_name: name,
-        email: email,
-        phone: phone,
-        position: position,
-        experience: experience,
-        education: education,
-        message: message,
-        resume_url: resumeUrl
-      };
-      await submitApplication(formData);
-    } catch(err){
-      console.error('تعذر حفظ الطلب', err);
-      alert('حدث خطأ أثناء إرسال الطلب: ' + err.message);
+  try{
+    if(window.storage){
+      await window.storage.set('application:' + submission.id, JSON.stringify(submission), true);
     }
-
+  }catch(err){
+    console.error('تعذر حفظ الطلب', err);
+  }
 
   const sheet = document.getElementById('sheet');
   const successView = document.getElementById('successView');
@@ -535,6 +515,7 @@ document.getElementById('jobForm').addEventListener('submit', function(e){
   window.scrollTo({top:0, behavior:'smooth'});
 });
 
+// ---- admin gate ----
 const gateOverlay = document.getElementById('gateOverlay');
 const passInput = document.getElementById('passInput');
 const gateError = document.getElementById('gateError');
@@ -553,12 +534,12 @@ document.getElementById('gateCancel').addEventListener('click', function(){
 document.getElementById('gateGo').addEventListener('click', checkPasscode);
 passInput.addEventListener('keydown', function(e){ if(e.key === 'Enter') checkPasscode(); });
 
-function checkPasscode(){
+async function checkPasscode(){
   if(passInput.value === ADMIN_PASSCODE){
     gateOverlay.classList.remove('show');
     document.querySelector('.form-wrap').style.display = 'none';
     document.getElementById('adminWrap').classList.add('show');
-    loadApplications();
+    await loadApplications();
   } else {
     gateError.style.display = 'block';
   }
@@ -569,16 +550,25 @@ document.getElementById('backToForm').addEventListener('click', function(){
   document.querySelector('.form-wrap').style.display = 'block';
 });
 
-function loadApplications(){
+async function loadApplications(){
   const listEl = document.getElementById('appsList');
   listEl.innerHTML = '<p class="empty-state">جاري تحميل الطلبات...</p>';
 
   try{
-    const apps = JSON.parse(localStorage.getItem('pipeline_apps') || '[]');
+    const result = await window.storage.list('application:', true);
+    const keys = (result && result.keys) ? result.keys : [];
 
-    if(apps.length === 0){
+    if(keys.length === 0){
       listEl.innerHTML = '<p class="empty-state">ما فيه طلبات وصلت لين الحين</p>';
       return;
+    }
+
+    const apps = [];
+    for(const key of keys){
+      try{
+        const rec = await window.storage.get(key, true);
+        if(rec && rec.value) apps.push(JSON.parse(rec.value));
+      }catch(err){ /* skip broken record */ }
     }
 
     apps.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
@@ -605,7 +595,7 @@ function loadApplications(){
           <div><span class="k">المؤهل:</span> ${escapeHtml(app.education || '—')}</div>
           ${app.cvLink ? `<div><span class="k">رابط:</span> ${escapeHtml(app.cvLink)}</div>` : ''}
           ${app.message ? `<div style="margin-top:8px;"><span class="k">نبذة:</span> ${escapeHtml(app.message)}</div>` : ''}
-          ${app.cvFileBase64 ? `<a class="dl-btn" download="${escapeHtml(app.cvFileName || 'cv.pdf')}" href="${app.cvFileBase64}">تحميل السيرة الذاتية</a>` : ''}
+          ${app.cvFileBase64 ? `<a class="dl-btn" href="${app.cvFileBase64}" target="_blank" rel="noopener">فتح السيرة الذاتية</a>` : ''}
         </div>
       `;
 
@@ -626,51 +616,6 @@ function escapeHtml(str){
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
-    // إعداد الاتصال بـ Supabase
-  const SUPABASE_URL = 'https://lcyvockgdgwjbvdvhpoe.supabase.co';
-  const SUPABASE_ANON_KEY = 'Sb_publishable_zUOqBD4xkRx-2vMXhBUeig_waV3ILEs';
-  const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-  // دالة رفع السيرة الذاتية
-  async function uploadResume(file) {
-    const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}_${Math.random().toString(36).substring(7)}.${fileExt}`;
-    
-    const { data, error } = await _supabase.storage
-      .from('resumes')
-      .upload(fileName, file);
-
-    if (error) throw error;
-
-    const { data: publicUrlData } = _supabase.storage
-      .from('resumes')
-      .getPublicUrl(fileName);
-
-    return publicUrlData.publicUrl;
-  }
-
-  // دالة حفظ طلب المتقدم
-  async function submitApplication(formData, cvUrl) {
-    const { data, error } = await _supabase
-      .from('applications')
-      .insert([
-        {
-          full_name: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          position: formData.position,
-          experience: formData.experience,
-          education: formData.education,
-          cv_url: cvUrl,
-          cv_link: cvUrl,
-          message: formData.message
-        }
-      ]);
-
-    if (error) throw error;
-    return data;
-  }
-
 }
 </script>
 
